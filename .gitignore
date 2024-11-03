@@ -10,7 +10,16 @@ __pycache__/
 # MongoDB data
 scrapydb-data/
 
-# Other stuff
+# OS generated files #
 .DS_Store
+.DS_Store?
+**/.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Other stuff
 crawler-log.txt
 urls.txt
