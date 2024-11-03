@@ -9,3 +9,8 @@ __pycache__/
 
 # MongoDB data
 scrapydb-data/
+
+# Other stuff
+.DS_Store
+crawler-log.txt
+urls.txt

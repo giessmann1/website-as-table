@@ -1,7 +1,7 @@
 import urllib
 import pymongo
-import base64
 import os
+import hashlib
 
 # Returns connection object at database level
 def mongo_authenticate(path):
@@ -34,15 +34,28 @@ def get_all_entries_by_source(col, source_url):
 def get_latest_entry_by_source(col, source_url):
     return col.find_one(
         {"SourceURL": source_url},
-        sort = [('Datetime', pymongo.DESCENDING)]
-        )
+        sort=[('Datetime', pymongo.DESCENDING)]
+    )
+
+# Returns all entries
+def get_all_entries(col, start_url):
+    return list(col.find({"StartURL": start_url}))
+
+# Update single entries, adding new columns is also possible
+def update_row(col, source_url, field, value):
+    query = {"SourceURL": source_url}
+    update = {"$set": {field: value}}
+    col.update_one(query, update, upsert=True)
 
 # Extract IMG data as file, given a website data as dict with Type = IMG
 def extract_img(website_data):
+    if (website_data is None):
+        print("Website data not found, None given.")
+        return
     if (website_data["Type"] != "IMG"):
         print("The given website data is not of type IMG.")
         return
-    
+
     img_data = website_data["Data"]
     filename = os.path.join("./", website_data["SourceURL"].split("/")[-1])
     if (filename.endswith(('.jpg', '.jpeg', '.png', '.gif')) is False):
@@ -56,10 +69,13 @@ def extract_img(website_data):
 
 # Extract PDF data as file, given a website data as dict with Type = PDF
 def extract_pdf(website_data):
+    if (website_data is None):
+        print("Website data not found, None given.")
+        return
     if (website_data["Type"] != "PDF"):
         print("The given website data is not of type PDF.")
         return
-    
+
     pdf_data = website_data["Data"]
     filename = os.path.join("./", website_data["SourceURL"].split("/")[-1])
 
@@ -68,9 +84,20 @@ def extract_pdf(website_data):
         file.write(pdf_data)
 
     print(f"Saved pdf file to {filename}")
-    
 
-# Run the module directly to check if connection works
+# SHA-256 a given object
+def hash_object(obj):
+    if (isinstance(obj, bytes)):
+        obj_bytes = obj
+    else:
+        obj_bytes = str.encode(obj)
+
+    hash_object = hashlib.sha256(obj_bytes)
+    hex_dig = hash_object.hexdigest()
+    return hex_dig
+
+
+# Run the module directly to check if connection work
 if __name__ == '__main__':
     try:
         db = mongo_authenticate('./')['scrapydb']
@@ -80,7 +107,3 @@ if __name__ == '__main__':
         print('Connection not working.')
         print(e)
         exit(1)
-
-    collection = db['websitedata']
-    
-    extract_pdf(get_latest_entry_by_source(collection, "https://benhoyt.com/cv/ben-hoyt-cv-resume.pdf"))

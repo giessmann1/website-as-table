@@ -12,5 +12,5 @@ fi
 # If you use Python Virtual Environment
 source .env/bin/activate
 echo $(date +'%Y-%m-%d') | tr "\n" " " >> $filename
-scrapy runspider generic_spider.py --nolog -a start_url=https://www.mach.de >> $filename
+scrapy runspider generic_spider.py --nolog -a url_file=urls.txt >> $filename
 deactivate

@@ -22,6 +22,7 @@ mkdir .secrets/
 echo -n "admin" > .secrets/mongodb_user.txt
 echo -n "password" > .secrets/mongodb_pwd.txt
 echo -n "localhost" > .secrets/host.txt
+echo -n "example.com" > urls.txt # Enter the URLs you want to crawl here
 ```
 
 Docker installation needed, see: https://docs.docker.com/engine/install/.
@@ -36,7 +37,7 @@ sh startdb.sh
 Manual (one-time) start:
 ```bash
 # Make sure venv is activated and db is up running
-python3 interamt_scraper.py
+scrapy runspider generic_spider.py --nolog -a url_file=urls.txt
 ```
 
-For automated start with crontab, see scraper-starter.sh
+For automated start with crontab, see crawler-starter.sh
