@@ -7,6 +7,9 @@ import re
 from urllib.parse import urlparse
 from pypdf import PdfReader
 import io
+from langdetect import detect
+from langdetect import DetectorFactory
+DetectorFactory.seed = 0
 
 # HTML Tag Categories, based on: https://developer.mozilla.org/en-US/docs/Web/HTML/Element
 
@@ -116,7 +119,7 @@ class GenericSpider(CrawlSpider):
         data_preprocessed = clean_html(data_raw)
 
         # No usefull information on this side
-        if data_preprocessed == "":
+        if data_preprocessed is None:
             print(f"'{response.url}' has no usefull information and is not crawled.")
             return
 
@@ -147,7 +150,8 @@ class GenericSpider(CrawlSpider):
             "meta_keywords": response.css('meta[name="keywords"]::attr(content)').get(),
             "RawData": data_raw,
             "PreprocessedData": data_preprocessed,
-            "Hash": hash
+            "Hash": hash,
+            "lang": detect(data_preprocessed)
         }
         database_wrapper.insert_one_in_collection(self.collection, page_data)
         print(f"'{response.url}' is crawled.")
@@ -205,7 +209,7 @@ class GenericSpider(CrawlSpider):
         data_preprocessed = extract_pdf_text(data_raw)
 
         # At this point we include non-readable PDFs since you probably want to do OCR later
-        # if data_preprocessed == "":
+        # if data_preprocessed == None:
         #     print(f"'{response.url}' has no usefull information and is not crawled.")
         #     return
 
@@ -229,7 +233,8 @@ class GenericSpider(CrawlSpider):
             "LinksTo": [],
             "RawData": data_raw,
             "PreprocessedData": data_preprocessed,
-            "Hash": hash
+            "Hash": hash,
+            "lang": detect(data_preprocessed) if data_preprocessed is not None else None
         }
         database_wrapper.insert_one_in_collection(self.collection, pdf_data)
         print(f"'{response.url}' is crawled.")
@@ -265,7 +270,8 @@ def clean_html(raw_html):
             tag.string = re.sub(
                 ' +', ' ', tag.string.replace("\n", "")).strip()
 
-    return soup.get_text(separator='\n', strip=True)
+    html = soup.get_text(separator='\n', strip=True)
+    return html if html != "" else None
 
 # Extracts the text of a given pdf data stream
 def extract_pdf_text(pdf_data):
@@ -274,4 +280,5 @@ def extract_pdf_text(pdf_data):
     text = ""
     for page in reader.pages:
         text += page.extract_text() + "\n"
-    return(text.strip())
+    text = text.strip()
+    return(text if text != "" else None)
