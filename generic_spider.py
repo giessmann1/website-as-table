@@ -5,6 +5,8 @@ import database_wrapper
 from bs4 import BeautifulSoup
 import re
 from urllib.parse import urlparse
+from pypdf import PdfReader
+import io
 
 # HTML Tag Categories, based on: https://developer.mozilla.org/en-US/docs/Web/HTML/Element
 
@@ -200,7 +202,14 @@ class GenericSpider(CrawlSpider):
 
         # Get HTML data
         data_raw = response.body
-        hash = database_wrapper.hash_object(data_raw)
+        data_preprocessed = extract_pdf_text(data_raw)
+
+        # At this point we include non-readable PDFs since you probably want to do OCR later
+        # if data_preprocessed == "":
+        #     print(f"'{response.url}' has no usefull information and is not crawled.")
+        #     return
+
+        hash = database_wrapper.hash_object(data_preprocessed)
 
         # Check if SourceURL was crawled before and changes occured
         latest_entry = database_wrapper.get_latest_entry_by_source(
@@ -219,6 +228,7 @@ class GenericSpider(CrawlSpider):
             "Type": "PDF",
             "LinksTo": [],
             "RawData": data_raw,
+            "PreprocessedData": data_preprocessed,
             "Hash": hash
         }
         database_wrapper.insert_one_in_collection(self.collection, pdf_data)
@@ -256,3 +266,12 @@ def clean_html(raw_html):
                 ' +', ' ', tag.string.replace("\n", "")).strip()
 
     return soup.get_text(separator='\n', strip=True)
+
+# Extracts the text of a given pdf data stream
+def extract_pdf_text(pdf_data):
+    pdf_content = io.BytesIO(pdf_data)
+    reader = PdfReader(pdf_content, strict=False)
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text() + "\n"
+    return(text.strip())

@@ -47,6 +47,11 @@ def update_row(col, source_url, field, value):
     update = {"$set": {field: value}}
     col.update_one(query, update, upsert=True)
 
+# Update many entries, adding new columns is also possible
+def update_many_rows(col, query, field, value):
+    update = {"$set": {field: value}}
+    col.update_many(query, update, upsert=True)
+
 # Extract IMG data as file, given a website data as dict with Type = IMG
 def extract_img(website_data):
     if (website_data is None):
@@ -96,7 +101,6 @@ def hash_object(obj):
     hex_dig = hash_object.hexdigest()
     return hex_dig
 
-
 # Run the module directly to check if connection work
 if __name__ == '__main__':
     try:
@@ -107,3 +111,6 @@ if __name__ == '__main__':
         print('Connection not working.')
         print(e)
         exit(1)
+
+
+    col = db["websitedata"]
