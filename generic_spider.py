@@ -120,7 +120,7 @@ class GenericSpider(CrawlSpider):
 
         # No usefull information on this side
         if data_preprocessed is None:
-            print(f"'{response.url}' has no usefull information and is not crawled.")
+            # print(f"'{response.url}' has no usefull information and is not crawled.")
             return
 
         hash = database_wrapper.hash_object(data_preprocessed)
@@ -130,8 +130,8 @@ class GenericSpider(CrawlSpider):
             self.collection, response.url)
         if latest_entry is not None:
             if latest_entry["Hash"] == hash:
-                print(
-                    f"'{response.url}' was crawled before and no changes occured.")
+                # print(
+                #     f"'{response.url}' was crawled before and no changes occured.")
                 return
 
         # Extract all links on the page (same domain only)
@@ -154,7 +154,7 @@ class GenericSpider(CrawlSpider):
             "lang": detect(data_preprocessed)
         }
         database_wrapper.insert_one_in_collection(self.collection, page_data)
-        print(f"'{response.url}' is crawled.")
+        # print(f"'{response.url}' is crawled.")
         # Increment page count for this specific start URL
         self.page_counts[start_url] += 1
 
@@ -180,8 +180,8 @@ class GenericSpider(CrawlSpider):
             self.collection, response.url)
         if latest_entry is not None:
             if latest_entry["Hash"] == hash:
-                print(
-                    f"'{response.url}' was crawled before and no changes occured.")
+                # print(
+                #     f"'{response.url}' was crawled before and no changes occured.")
                 return
 
         # Save image data
@@ -195,7 +195,7 @@ class GenericSpider(CrawlSpider):
             "Hash": hash
         }
         database_wrapper.insert_one_in_collection(self.collection, img_data)
-        print(f"'{response.url}' is crawled.")
+        # print(f"'{response.url}' is crawled.")
         # Increment page count for this specific start URL
         self.page_counts[start_url] += 1
 
@@ -220,8 +220,8 @@ class GenericSpider(CrawlSpider):
             self.collection, response.url)
         if latest_entry is not None:
             if latest_entry["Hash"] == hash:
-                print(
-                    f"'{response.url}' was crawled before and no changes occured.")
+                # print(
+                #     f"'{response.url}' was crawled before and no changes occured.")
                 return
 
         # Save PDF data
@@ -237,7 +237,7 @@ class GenericSpider(CrawlSpider):
             "lang": detect(data_preprocessed) if data_preprocessed is not None else None
         }
         database_wrapper.insert_one_in_collection(self.collection, pdf_data)
-        print(f"'{response.url}' is crawled.")
+        # print(f"'{response.url}' is crawled.")
         # Increment page count for this specific start URL
         self.page_counts[start_url] += 1
 
